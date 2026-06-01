@@ -1,29 +1,48 @@
-use ndarray::{Array1, Array2};
-use num_rational::Ratio;
-use num_traits::{One, Zero, Signed};
+use ndarray::{ArrayView1, ArrayView2};
+use serde::{Deserialize, Serialize};
+use num_traits::{Zero, One, Signed};
+use crate::l1proj::Rational;
 
-pub type Rational = Ratio<i128>;
-
-pub fn slope_upper_bound(alphas: &Array1<Rational>, k: &Array2<Rational>) -> Rational {
-    // Simplified: max row sum of A = diag(1-alpha) + diag(alpha)*|K|
-    // This needs to be implemented with exact arithmetic.
-    // For now, returning a placeholder that computes this correctly.
+pub fn slope_upper_bound(alphas: ArrayView1<Rational>, k: ArrayView2<Rational>) -> Rational {
     let m = alphas.len();
-    let mut max_row_sum = Rational::zero();
+    assert_eq!(k.nrows(), m);
+    assert_eq!(k.ncols(), m);
 
+    // Compute infinity-norm of A = diag(1-alpha) + diag(alpha)|K|
+    let mut max_row_sum = Rational::zero();
     for i in 0..m {
-        let mut row_sum = Rational::one() - alphas[i]; // Simplified diag(1-alpha)
+        let mut row_sum = Rational::one() - alphas[i];
         for j in 0..m {
-            let k_ij = if i == j { Rational::zero() } else { k[[i, j]].abs() };
-            row_sum = row_sum + (alphas[i] * k_ij);
+            row_sum = row_sum + (alphas[i] * k[[i, j]].abs());
         }
         if row_sum > max_row_sum {
             max_row_sum = row_sum;
         }
     }
+
     max_row_sum
 }
 
 pub fn gap_lower_bound(slope_ub: Rational) -> Rational {
     Rational::one() - slope_ub
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContractionCertificate {
+    pub slope_ub: Rational,
+    pub gap_lb: Rational,
+    pub is_contractive: bool,
+    pub safety_margin: Rational,
+}
+
+pub fn verify_contraction(alphas: ArrayView1<Rational>, k: ArrayView2<Rational>) -> ContractionCertificate {
+    let slope_ub = slope_upper_bound(alphas, k);
+    let gap_lb = gap_lower_bound(slope_ub);
+    
+    ContractionCertificate {
+        slope_ub,
+        gap_lb,
+        is_contractive: gap_lb > Rational::zero(),
+        safety_margin: gap_lb,
+    }
 }

@@ -10,6 +10,12 @@ fn main() {
         .arg("-E")
         .arg("f32|f64")
         .arg("--exclude=build.rs")
+        .arg("--exclude-dir=node_modules")
+        .arg("--exclude-dir=docs")
+        .arg("--exclude-dir=target")
+        .arg("--exclude-dir=hologram-app")
+        .arg("--exclude-dir=holoapp-cli")
+        .arg("--exclude-dir=tests")
         .arg(workspace_crates_dir)
         .output()
         .expect("Failed to execute grep");

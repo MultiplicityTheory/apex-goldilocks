@@ -1,52 +1,33 @@
 use std::collections::HashMap;
-use ndarray::{Array1, ArrayView1};
+use ndarray::Array1;
 use anyhow::Result;
+use num_traits::{Zero, ToPrimitive, Signed};
 use crate::projectors::{ProjectorFamily, PiIndexGrid};
-use crate::kernel::PiKernel;
+use crate::l1proj::Rational;
 use crate::ledger::{Ledger, DefaultLedger, PoseidonLedger};
 use crate::mub_audit::{mub_drift_audit, MubAuditResult};
 use crate::routing::{build_channel_blocks, CHANNEL_MAP};
 
-pub struct HologramAdapter<'a> {
-    pub grid: PiIndexGrid,
-    pub alphas: HashMap<Vec<usize>, f64>,
-    pub weights: HashMap<Vec<usize>, Array1<f64>>,
-    pub taus: HashMap<Vec<usize>, f64>,
-    pub k: Array1<f64>, // Wait, K was a matrix in PiKernel
-    pub k_matrix: ndarray::Array2<f64>,
-    pub mub_threshold: f64,
-    pub tau_shrink_factor: f64,
-    pub kernel: PiKernel<'a>,
-    pub channel_atoms: HashMap<u32, Vec<Vec<usize>>>,
-    pub channel_indices: HashMap<u32, Vec<usize>>,
-    pub mub_alarms: usize,
-    pub total_steps: usize,
-}
-
-// Re-thinking HologramAdapter structure because of lifetimes and ownership
-// In Rust, it's better if HologramAdapter owns its components or we manage lifetimes carefully.
-// The Python version re-initializes self.kernel on MUB alarm.
-
 pub struct HologramAdapterConfig {
     pub families: Vec<ProjectorFamily>,
-    pub alphas: HashMap<Vec<usize>, f64>,
-    pub weights: HashMap<Vec<usize>, Array1<f64>>,
-    pub taus: HashMap<Vec<usize>, f64>,
-    pub k: ndarray::Array2<f64>,
+    pub alphas: HashMap<Vec<usize>, Rational>,
+    pub weights: HashMap<Vec<usize>, Array1<Rational>>,
+    pub taus: HashMap<Vec<usize>, Rational>,
+    pub k: ndarray::Array2<Rational>,
     pub use_poseidon: bool,
     pub ledger_path: Option<String>,
     pub mub_threshold: f64,
-    pub tau_shrink_factor: f64,
+    pub tau_shrink_factor: Rational,
 }
 
 pub struct HologramAdapterManaged {
     pub grid: PiIndexGrid,
-    pub alphas: HashMap<Vec<usize>, f64>,
-    pub weights: HashMap<Vec<usize>, Array1<f64>>,
-    pub taus: HashMap<Vec<usize>, f64>,
-    pub k: ndarray::Array2<f64>,
+    pub alphas: HashMap<Vec<usize>, Rational>,
+    pub weights: HashMap<Vec<usize>, Array1<Rational>>,
+    pub taus: HashMap<Vec<usize>, Rational>,
+    pub k: ndarray::Array2<Rational>,
     pub mub_threshold: f64,
-    pub tau_shrink_factor: f64,
+    pub tau_shrink_factor: Rational,
     pub ledger: Box<dyn Ledger>,
     pub channel_atoms: HashMap<u32, Vec<Vec<usize>>>,
     pub channel_indices: HashMap<u32, Vec<usize>>,
@@ -57,7 +38,7 @@ pub struct HologramAdapterManaged {
 
 impl HologramAdapterManaged {
     pub fn new(config: HologramAdapterConfig) -> Result<Self> {
-        let grid = PiIndexGrid::new(config.families)?;
+        let grid = PiIndexGrid::new(config.families).map_err(|e| anyhow::anyhow!(e))?;
         let channel_primes: Vec<u32> = CHANNEL_MAP.keys().cloned().collect();
         let (channel_atoms, channel_indices) = build_channel_blocks(&grid, &channel_primes);
         
@@ -84,14 +65,11 @@ impl HologramAdapterManaged {
         })
     }
 
-    pub fn step(&mut self, x: ArrayView1<f64>) -> Result<AdapterStepResult> {
-        // We don't use PiKernel directly here to avoid lifetime issues with Box<dyn Ledger>
-        // and because the Python version re-creates it. We'll just implement the loop here.
-        
+    pub fn step(&mut self, x: &Array1<Rational>) -> Result<AdapterStepResult> {
         let m = self.grid.pi_ids.len();
         let mut alpha_vec = Array1::zeros(m);
         for (i, pi_id) in self.grid.pi_ids.iter().enumerate() {
-            alpha_vec[i] = *self.alphas.get(pi_id).unwrap_or(&0.0);
+            alpha_vec[i] = *self.alphas.get(pi_id).unwrap_or(&Rational::zero());
         }
 
         let slope_ub = crate::certificates::slope_upper_bound(alpha_vec.view(), self.k.view());
@@ -107,29 +85,35 @@ impl HologramAdapterManaged {
                 c[i] = x[idx];
             }
 
-            // Using default proposer logic for now
-            let prop = c.to_owned() * 0.9;
+            // Using default proposer logic (0.9 damping)
+            let damping = Rational::new(9, 10);
+            let prop = c.mapv(|ci| ci * damping);
             let w = self.weights.get(pi_id).unwrap();
             let tau = *self.taus.get(pi_id).unwrap();
 
-            let (c_safe, lam) = crate::l1proj::project_weighted_l1_ball(prop.view(), w.view(), tau, 1e-12, 10000);
+            let (c_safe, lam) = crate::l1proj::project_weighted_l1_ball(&prop, w, tau, 100);
 
-            let diff = &c_safe - &c;
-            let norm = diff.mapv(|a| a.powi(2)).sum().sqrt();
+            let mut norm = Rational::zero();
+            for i in 0..c.len() {
+                norm = norm + (c_safe[i] - c[i]).abs();
+            }
 
-            if norm > 1e-14 {
+            if norm > Rational::zero() {
                 touched.push(pi_id.clone());
 
                 let mut record = HashMap::new();
                 record.insert("step".to_string(), (self.step_count).into());
                 record.insert("pi".to_string(), serde_json::to_value(pi_id)?);
-                record.insert("alpha".to_string(), (*self.alphas.get(pi_id).unwrap()).into());
-                record.insert("tau".to_string(), tau.into());
-                record.insert("lambda_soft".to_string(), lam.into());
+                record.insert("alpha".to_string(), serde_json::to_value(self.alphas.get(pi_id).unwrap())?);
+                record.insert("tau".to_string(), serde_json::to_value(tau)?);
+                record.insert("lambda_soft".to_string(), serde_json::to_value(lam)?);
                 
-                let weight_sum: f64 = c_safe.iter().zip(w.iter()).map(|(ci, wi)| wi * ci.abs()).sum();
-                record.insert("l1_weight_sum".to_string(), weight_sum.into());
-                record.insert("change_norm".to_string(), norm.into());
+                let mut weight_sum = Rational::zero();
+                for i in 0..c_safe.len() {
+                    weight_sum = weight_sum + (w[i] * c_safe[i].abs());
+                }
+                record.insert("l1_weight_sum".to_string(), serde_json::to_value(weight_sum)?);
+                record.insert("change_norm".to_string(), serde_json::to_value(norm)?);
 
                 self.ledger.append(record)?;
             }
@@ -139,12 +123,12 @@ impl HologramAdapterManaged {
             }
         }
 
-        let audit = mub_drift_audit(x_new.view(), self.mub_threshold);
+        let audit = mub_drift_audit(&x_new, self.mub_threshold);
         if audit.alarm {
             self.mub_alarms += 1;
             for pi_id in &self.grid.pi_ids {
                 if let Some(t) = self.taus.get_mut(pi_id) {
-                    *t *= self.tau_shrink_factor;
+                    *t = *t * self.tau_shrink_factor;
                 }
             }
         }
@@ -165,9 +149,9 @@ impl HologramAdapterManaged {
 }
 
 pub struct AdapterStepResult {
-    pub x_new: Array1<f64>,
-    pub slope_ub: f64,
-    pub gap_lb: f64,
+    pub x_new: Array1<Rational>,
+    pub slope_ub: Rational,
+    pub gap_lb: Rational,
     pub touched: Vec<Vec<usize>>,
     pub audit: MubAuditResult,
     pub mub_alarms: usize,
