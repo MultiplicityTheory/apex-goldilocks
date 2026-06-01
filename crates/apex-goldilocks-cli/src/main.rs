@@ -6,6 +6,13 @@ use apex_hologram::{AtlasEmbeddingProof, RecursiveProof};
 use goldilocks::{GoldilocksField, PrimeMask};
 use apex_goldilocks_core::GoldVector;
 
+use apex_pikernel::{
+    ProjectorFamily, PiIndexGrid, HologramAdapterManaged, HologramAdapterConfig, Rational
+};
+use num_traits::{Zero, One};
+use ndarray::{Array1, Array2};
+use std::collections::HashMap;
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -44,6 +51,21 @@ enum Commands {
         /// Stratum ID for admissibility check
         #[arg(short, long, default_value = "S1")]
         stratum: String,
+    },
+    /// Run an E2E parameter sweep for the pi-kernel bridge.
+    SweepPikernel {
+        /// Start value for tau (in units of 0.1)
+        #[arg(long, default_value_t = 10)]
+        tau_start: u32,
+        /// End value for tau (in units of 0.1)
+        #[arg(long, default_value_t = 20)]
+        tau_end: u32,
+        /// Start value for alpha (in units of 0.1)
+        #[arg(long, default_value_t = 1)]
+        alpha_start: u32,
+        /// End value for alpha (in units of 0.1)
+        #[arg(long, default_value_t = 5)]
+        alpha_end: u32,
     },
 }
 
@@ -155,6 +177,68 @@ fn main() {
                     std::process::exit(1);
                 }
             }
+        }
+        Commands::SweepPikernel { tau_start, tau_end, alpha_start, alpha_end } => {
+            println!("🚀 Starting E2E Parameter Sweep for pi-kernel...");
+            
+            // 1. Define fixed families for 16D space
+            let a = ProjectorFamily::new(
+                vec![vec![0, 4, 8, 12], vec![1, 5, 9, 13], vec![2, 6, 10, 14], vec![3, 7, 11, 15]],
+                "Spectral".to_string()
+            );
+            let b = ProjectorFamily::new(
+                vec![vec![0, 1, 2, 3, 4, 5, 6, 7], vec![8, 9, 10, 11, 12, 13, 14, 15]],
+                "Memory".to_string()
+            );
+            let families = vec![a, b];
+            let grid = PiIndexGrid::new(families.clone()).unwrap();
+
+            println!("| Tau | Alpha | Stability (GapLB) | MUB Alarms | Ledger Entries | Status |");
+            println!("|-----|-------|-------------------|------------|----------------|--------|");
+
+            for t_idx in *tau_start..=*tau_end {
+                for a_idx in *alpha_start..=*alpha_end {
+                    let tau = Rational::new(t_idx as i128, 10);
+                    let alpha = Rational::new(a_idx as i128, 10);
+
+                    let mut alphas = HashMap::new();
+                    let mut weights = HashMap::new();
+                    let mut taus = HashMap::new();
+
+                    for pi in &grid.pi_ids {
+                        alphas.insert(pi.clone(), alpha);
+                        let indices = grid.indices(pi).unwrap();
+                        weights.insert(pi.clone(), Array1::from_elem(indices.len(), Rational::one()));
+                        taus.insert(pi.clone(), tau);
+                    }
+
+                    let m = grid.pi_ids.len();
+                    let k = Array2::from_elem((m, m), Rational::new(35, 100)); // Higher coupling (0.35)
+                    
+                    let config = HologramAdapterConfig {
+                        families: families.clone(),
+                        alphas,
+                        weights,
+                        taus,
+                        k,
+                        use_poseidon: true,
+                        ledger_path: None,
+                        mub_threshold: 3.0,
+                        tau_shrink_factor: Rational::new(9, 10),
+                    };
+
+                    let mut adapter = HologramAdapterManaged::new(config).unwrap();
+                    let x = Array1::from_elem(16, Rational::new(5, 10));
+                    
+                    let result = adapter.step(&x).unwrap();
+                    let status = if result.gap_lb > Rational::zero() { "STABLE" } else { "UNSTABLE" };
+                    
+                    println!("| {}.{} | {}.{} | {} | {} | {} | {} |", 
+                        t_idx / 10, t_idx % 10, a_idx / 10, a_idx % 10, result.gap_lb, 
+                        result.mub_alarms, adapter.ledger.get_entries().len(), status);
+                }
+            }
+            println!("\n✅ Parameter Sweep Complete.");
         }
     }
 }

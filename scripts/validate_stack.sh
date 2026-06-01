@@ -39,7 +39,7 @@ cargo run -q -p apex-goldilocks-cli -- verify-stability --total-norm 800000 --go
 
 # 5. Scientific Experiment Runner
 echo -e "\n[PHASE 5] Generating Scientific Validation Report..."
-python3 scripts/run_scientific_experiment.py
+python3 scripts/run_experiment.py
 
 echo -e "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🎉 STACK VALIDATION SUCCESSFUL"

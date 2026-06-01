@@ -93,7 +93,7 @@ impl<'a> PiKernel<'a> {
             let w = self.weights.get(pi_id).unwrap();
             let tau = *self.taus.get(pi_id).unwrap();
 
-            let (c_safe, lam) = project_weighted_l1_ball(&prop, w, tau, 100);
+            let (c_safe, lam) = project_weighted_l1_ball(&prop, w, tau, 60);
 
             // Change norm (using L1 for exactness)
             let mut norm = Rational::zero();
@@ -108,16 +108,18 @@ impl<'a> PiKernel<'a> {
                     let mut record = HashMap::new();
                     record.insert("step".to_string(), (self.step_count).into());
                     record.insert("pi".to_string(), serde_json::to_value(pi_id)?);
-                    record.insert("alpha".to_string(), serde_json::to_value(self.alphas.get(pi_id).unwrap())?);
-                    record.insert("tau".to_string(), serde_json::to_value(tau)?);
-                    record.insert("lambda_soft".to_string(), serde_json::to_value(lam)?);
+                    
+                    let alpha = self.alphas.get(pi_id).unwrap();
+                    record.insert("alpha".to_string(), format!("{}/{}", alpha.numer(), alpha.denom()).into());
+                    record.insert("tau".to_string(), format!("{}/{}", tau.numer(), tau.denom()).into());
+                    record.insert("lambda_soft".to_string(), format!("{}/{}", lam.numer(), lam.denom()).into());
                     
                     let mut weight_sum = Rational::zero();
                     for i in 0..c_safe.len() {
                         weight_sum = weight_sum + (w[i] * c_safe[i].abs());
                     }
-                    record.insert("l1_weight_sum".to_string(), serde_json::to_value(weight_sum)?);
-                    record.insert("change_norm".to_string(), serde_json::to_value(norm)?);
+                    record.insert("l1_weight_sum".to_string(), format!("{}/{}", weight_sum.numer(), weight_sum.denom()).into());
+                    record.insert("change_norm".to_string(), format!("{}/{}", norm.numer(), norm.denom()).into());
 
                     ledger.append(record)?;
                 }

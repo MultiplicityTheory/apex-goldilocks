@@ -7,6 +7,7 @@ edition.workspace = true
 apex-goldilocks-core = { workspace = true }
 multiplicity-runtime = { workspace = true }
 apex-hologram = { workspace = true }
+apex-pikernel = { workspace = true }
 goldilocks = { workspace = true }
 pirtm-compiler = { workspace = true }
 serde = { workspace = true }
@@ -15,3 +16,5 @@ clap = { workspace = true }
 thiserror = { workspace = true }
 log = { workspace = true }
 env_logger = { workspace = true }
+ndarray = { workspace = true }
+num-traits = { workspace = true }

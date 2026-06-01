@@ -76,11 +76,11 @@ fn test_ledger_sha256() {
     let mut record = HashMap::new();
     record.insert("step".to_string(), 0.into());
     record.insert("pi".to_string(), vec![0, 0].into());
-    record.insert("alpha".to_string(), serde_json::to_value(Rational::new(1, 10)).unwrap());
-    record.insert("tau".to_string(), serde_json::to_value(Rational::one()).unwrap());
-    record.insert("lambda_soft".to_string(), serde_json::to_value(Rational::zero()).unwrap());
-    record.insert("l1_weight_sum".to_string(), serde_json::to_value(Rational::new(5, 10)).unwrap());
-    record.insert("change_norm".to_string(), serde_json::to_value(Rational::new(1, 10)).unwrap());
+    record.insert("alpha".to_string(), "1/10".into());
+    record.insert("tau".to_string(), "1/1".into());
+    record.insert("lambda_soft".to_string(), "0/1".into());
+    record.insert("l1_weight_sum".to_string(), "5/10".into());
+    record.insert("change_norm".to_string(), "1/10".into());
     
     let digest = ledger.append(record).unwrap();
     assert_eq!(digest.len(), 64);

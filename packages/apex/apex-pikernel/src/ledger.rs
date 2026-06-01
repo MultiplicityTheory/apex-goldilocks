@@ -11,14 +11,45 @@ use crate::l1proj::Rational;
 pub struct LedgerEntry {
     pub step: usize,
     pub pi: Vec<usize>,
+    #[serde(with = "rational_string")]
     pub alpha: Rational,
+    #[serde(with = "rational_string")]
     pub tau: Rational,
+    #[serde(with = "rational_string")]
     pub lambda_soft: Rational,
+    #[serde(with = "rational_string")]
     pub l1_weight_sum: Rational,
+    #[serde(with = "rational_string")]
     pub change_norm: Rational,
     pub timestamp_ms: i64,
     pub digest: String,
     pub hash_type: String,
+}
+
+mod rational_string {
+    use super::*;
+    use serde::{Deserializer, Serializer};
+
+    pub fn serialize<S>(val: &Rational, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&format!("{}/{}", val.numer(), val.denom()))
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Rational, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let parts: Vec<&str> = s.split('/').collect();
+        if parts.len() != 2 {
+            return Err(serde::de::Error::custom("Invalid rational format"));
+        }
+        let n = parts[0].parse::<i128>().map_err(serde::de::Error::custom)?;
+        let d = parts[1].parse::<i128>().map_err(serde::de::Error::custom)?;
+        Ok(Rational::new(n, d))
+    }
 }
 
 pub trait Ledger: std::fmt::Debug {
