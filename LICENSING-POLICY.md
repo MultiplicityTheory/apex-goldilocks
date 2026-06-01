@@ -16,5 +16,5 @@ All crates in `projects/apex-goldilocks` are licensed under the **Proprietary Ph
     *   `apex-goldilocks-cli`: The unified delivery tool.
 
 ## Governance
-- **Zero Drift**: No modifications to the proprietary certifier logic are permitted without explicit CH LABS MOU approval.
+- **Zero Drift**: No modifications to the proprietary certifier logic are permitted without explicit Citizen Gardens approval.
 - **Redistribution**: Redistribution of any binary containing the Sealed Pro Tier is prohibited without a commercial license.
