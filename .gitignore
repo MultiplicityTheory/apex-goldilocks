@@ -55,6 +55,10 @@ Thumbs.db
 htmlcov/
 .pytest_cache/
 
+# Rust build artifacts
+target/
+**/target/
+
 # Temporary files
 *.tmp
 *.temp
