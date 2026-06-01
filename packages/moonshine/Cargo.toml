@@ -1,0 +1,19 @@
+[package]
+name = "apex-moonshine"
+version = "0.1.0"
+edition = "2021"
+description = "Monstrous Moonshine embeddings and ZK-sketches for Apex"
+
+[dependencies]
+apex-core = { path = "../core" }
+apex-aep = { path = "../aep" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+blake2.workspace = true
+sha2.workspace = true
+ndarray.workspace = true
+
+[lib]
+name = "apex_moonshine"
+path = "src/lib.rs"

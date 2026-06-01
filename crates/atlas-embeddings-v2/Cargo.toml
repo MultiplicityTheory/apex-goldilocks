@@ -1,0 +1,8 @@
+[package]
+name = "atlas-embeddings-v2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+goldilocks = { path = "../goldilocks" }
+apex-goldilocks-core = { path = "../apex-goldilocks-core" }

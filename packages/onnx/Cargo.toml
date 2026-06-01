@@ -1,0 +1,27 @@
+[package]
+name = "apex-onnx"
+version = "0.1.0"
+edition = "2021"
+description = "ONNX toolchain for Apex - compile and run models with exact arithmetic"
+
+[dependencies]
+apex-core.workspace = true
+apex-hologram.workspace = true
+apex-sigmatics.workspace = true
+hologram-onnx-compiler = { path = "crates/compiler" }
+hologram-onnx-downloader = { path = "crates/downloader" }
+hologram-onnx-converter = { path = "crates/onnx_converter" }
+clap = { version = "4.5", features = ["derive"] }
+anyhow.workspace = true
+dirs = "5.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tokio = { version = "1.39", features = ["full"] }
+
+[lib]
+name = "apex_onnx"
+path = "src/lib.rs"
+
+[[bin]]
+name = "apex-onnx"
+path = "src/main.rs"

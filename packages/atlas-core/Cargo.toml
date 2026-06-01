@@ -1,0 +1,18 @@
+[package]
+name = "apex-core"
+version = "0.1.0"
+edition = "2021"
+description = "Foundational arithmetic and Atlas graph for the Apex system"
+
+[dependencies]
+num-rational.workspace = true
+num-integer.workspace = true
+num-traits.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+blake2.workspace = true
+
+[lib]
+name = "apex_core"
+path = "src/lib.rs"

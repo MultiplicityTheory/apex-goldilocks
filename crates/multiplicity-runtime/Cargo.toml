@@ -1,0 +1,12 @@
+[package]
+name = "multiplicity-runtime"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apex-goldilocks-core = { path = "../apex-goldilocks-core" }
+goldilocks.workspace = true
+pirtm-compiler.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+log.workspace = true

@@ -1,0 +1,6 @@
+{
+  "delta": -0.0184,
+  "fixture": "high_rho_outlier_reject",
+  "rho_global": 0.9684,
+  "verdict": "FAIL"
+}

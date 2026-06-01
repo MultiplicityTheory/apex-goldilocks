@@ -1,0 +1,11 @@
+[package]
+name = "hologram-goldilocks"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+goldilocks.workspace = true
+pirtm-compiler.workspace = true
+apex-goldilocks-core = { path = "../apex-goldilocks-core" }
+atlas-embeddings-v2 = { path = "../atlas-embeddings-v2" }
+anyhow.workspace = true

@@ -1,0 +1,12 @@
+[package]
+name = "apex-hologram"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+apex-goldilocks-core = { path = "../apex-goldilocks-core" }
+multiplicity-runtime = { path = "../multiplicity-runtime" }
+goldilocks.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+log.workspace = true

@@ -1,0 +1,16 @@
+[package]
+name = "apex-sigmatics"
+version = "0.1.0"
+edition = "2021"
+description = "Rust implementation of the Atlas Sigil Algebra"
+
+[dependencies]
+apex-core = { path = "../core" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+regex.workspace = true
+
+[lib]
+name = "apex_sigmatics"
+path = "src/lib.rs"

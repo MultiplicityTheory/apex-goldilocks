@@ -1,0 +1,21 @@
+[package]
+name = "apex-hologram"
+version = "0.1.0"
+edition = "2021"
+description = "Canonical holographic compute for the Apex system"
+
+[dependencies]
+apex-core = { path = "../core" }
+apex-aep = { path = "../aep" }
+apex-sigmatics = { path = "../sigmatics" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+blake2.workspace = true
+ndarray.workspace = true
+num-traits.workspace = true
+num-rational.workspace = true
+
+[lib]
+name = "apex_hologram"
+path = "src/lib.rs"

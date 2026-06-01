@@ -1,0 +1,19 @@
+[package]
+name = "apex-pikernel"
+version = "0.1.0"
+edition = "2021"
+authors = ["UOR Foundation"]
+description = "Exact-arithmetic Rust implementation of π-kernel for ACE and PETC"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+num-rational = { version = "0.4", default-features = false, features = ["serde"] }
+num-integer = { version = "0.1", default-features = false }
+num-traits = { version = "0.2", default-features = false, features = ["std"] }
+ndarray = { version = "0.15", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+
+[lib]
+path = "src/lib.rs"

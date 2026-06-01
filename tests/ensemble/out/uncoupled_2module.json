@@ -1,0 +1,6 @@
+{
+  "delta": 0.13,
+  "fixture": "uncoupled_2module",
+  "rho_global": 0.82,
+  "verdict": "PASS"
+}
