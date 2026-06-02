@@ -1,177 +1,123 @@
-# Hologram APEX - Goldilocks
+[![Mirror Symmetry](https://github.com/UOR-Foundation/Hologram-APEX/workflows/Mirror%20Symmetry%20Invariant/badge.svg)](https://github.com/UOR-Foundation/Hologram-APEX/actions/workflows/mirror_symmetry_check.yml)
 
-A math‑first compute stack that turns symmetry, invariants, and positive geometry into **executable proofs** and **verifiable computation**.
+# Hologram APEX (Rust Edition)
 
-> Bottom line: this repo defines the Atlas→E8 embedding, an invariant‑checked ISA, and a contractive runtime. You get runnable, proof‑carrying kernels (AEPs), a certified schedule (C768), and a rigorous bridge across moonshine substrates. Anything not labelled proven is **UNPROVEN**.
+A high-performance, math-first compute stack that turns symmetry, invariants, and positive geometry into **executable proofs** and **verifiable computation**.
 
----
-
-## 1. What this project is
-
-- **Atlas of Resonance Classes → E8**: a 96‑class combinatorial object with a canonical embedding into the E8 root system and a Σ‑calculus for constructing the exceptional types.
-- **ISA + AEPs**: an instruction set where invariants are first‑class. **Atlas‑Embedding Proofs (AEPs)** are tiny, portable programs that *prove* an Atlas fact by running a kernel whose launch fails if an invariant is violated.
-- **Six‑Level Tetrahedral Rhythm → Hologram**: an integration spec that certifies a canonical fair schedule (**C768**) with orbit tilings and audit artifacts.
-- **Π‑kernel ↔ Multiplicity Runtime**: a factorized kernel that updates only touched atoms, bridged to a prime‑graded, **contractive** runtime with explicit ACE safety sets.
-- **Conway–Monster Bridge**: a rigor‑first hybrid architecture linking Co₁/Leech and Monster/VOA sectors via the 2B centralizer with uniqueness of the 2B‑gate intertwiner.
-
-Scope: formal specs, proofs, verification checklists, and reference harnesses for invariant‑carrying computation.
+> **Status**: This project is now a standalone Rust workspace, integrating the Sedona Spine mandate and PIRTM-lang roadmap (Phases A, B, and C). It provides runnable, proof-carrying kernels (AEPs), a certified schedule (C768), and a high-performance Rust port of the $\pi$-kernel.
 
 ---
 
-## 2. Why it exists
+## 1. Core Modules
 
-Conventional stacks bolt correctness on after execution. **Hologram APEX** makes correctness *structural*:
-
-- **Invariants are executable** (ISA attributes; AEPs).
-- **Schedules are certified** (C768; orbit tilings; audit bundle).
-- **Updates are contractive** (ACE safety; KKT certificate; rollback discipline).
-- **Bridges are representation‑theoretic** (Monster⇄Conway; multiplicity‑one restrictions).
+- **Atlas → E8 Core**: Canonical 96-class combinatorial object with machine-checked embeddings.
+- **PIRTM-lang Compiler**: Formal governance-as-compilation.
+    - **Phase A**: Grammar enforcement via `tree-sitter`.
+    - **Phase B**: Multiplicity Functor implementation via the `Sig` library.
+    - **Phase C**: ACE stability invariant checks.
+- **$\pi$-kernel (Rust)**: High-performance, projection-first kernel with weighted $\ell_1$-ball safety (ACE), contraction certificates, and PETC ledger.
+- **Multiplicity Runtime**: Prime-graded channel runtime with explicit contraction margins and cryptographic audit trails (SHA-256/Poseidon).
+- **Hologram Desktop**: A Tauri/React-based interface featuring an ACE Stability Dashboard and PIRTM Source Validator.
 
 ---
 
-## 3. Architecture at a glance
+## 2. Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                           Hologram APEX Stack                            │
+│                      Hologram APEX Rust Workspace                        │
 ├──────────────┬──────────────────────────┬─────────────────────────────────┤
-│   Models     │      Kernels (Π)        │    Runtime (Multiplicity)       │
-│  (Atlas/E8,  │  Π‑atoms, projectors,   │  Prime‑graded channels, ACE     │
-│  Moonshine)  │  damped proximal steps  │  safety set, contraction, logs  │
+│   Models     │      Kernels (apex-π)    │    Runtime (multiplicity)       │
+│ (Atlas/E8)   │  ACE Projection (L1),    │  Prime-graded channels, ACE     │
+│              │  Contraction Certificates│  safety set, PETC Ledger, MUB   │
 ├──────────────┴─────────────┬────────────┴─────────────────────────────────┤
-│            ISA (Atlas invariants) + AEP runners + C768 schedule          │
+│    PIRTM-lang Compiler (tree-sitter) + Sig (Multiplicity Functor)        │
 ├────────────────────────────┴──────────────────────────────────────────────┤
-│               Conway–Monster Bridge + Audit + Evidence                   │
+│               Hologram Desktop (Tauri + React + WASM)                    │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. What works now
+## 3. Implementation Progress
 
-- **Atlas→E8 embedding** with paste‑stable ordering, Σ‑constructions of G₂, F₄, E₆, E₇, E₈, and machine checks.
-- **AEP template**: `aep.toml` claim, `kernel.atlas` with invariant attributes, and a portable `runner.py` that fails fast if an invariant is broken.
-- **Six‑Level Tetrahedral Rhythm** integration: explicit group action, freeness, orbit‑tiling certificate, and **C768** fair schedule with audit bundle requirements.
-- **Π‑kernel spec**: atom definition, orthogonal/tight frame guarantees, recomposition bounds, slope/energy budgets, MUB drift audit.
-- **Runtime guarantees**: ACE ℓ₁‑budgeted projection with KKT certificate, immediate contraction lemma, fixed‑point existence in time‑invariant cases, rollback discipline.
-- **Conway–Monster Bridge**: multiplicity‑one restriction of 196,883 to the 2B centralizer, equivariant idempotents, and uniqueness of the 2B‑gate intertwiner.
-
----
-
-## 5. UNPROVEN vs Proven
-
-**Proven / implementation‑ready**
-- Atlas→E8 embedding and Σ‑calculus checks.
-- AEP invariant schema and fail‑fast semantics.
-- Group‑action freeness + orbit tiling + C768 schedule spec.
-- Π‑kernel recomposition bounds and update discipline.
-- ACE projection, contraction, and runtime fixed‑point theorems.
-- Conway–Monster Bridge representation‑theoretic statements.
-
-**UNPROVEN / needs validation**
-- Any physical interpretation beyond pure mathematics.
-- End‑to‑end performance claims beyond asymptotic guarantees.
-- Direct Π‑kernel action on moonshine multiplicities without the stated bridge layer.
+- [x] **Standalone Transformation**: All core dependencies (`goldilocks`, `pirtm-compiler`, `apex-pikernel`) are now internalized within the workspace.
+- [x] **$\pi$-kernel Rust Port**: Full parity with reference Python implementation, optimized for `ndarray`.
+- [x] **ACE Stability**: Phase C implementation for strictly non-inflationary contractivity checks.
+- [x] **PETC Ledger**: Integrated SHA-256 and Poseidon (BN254) commitment schemes.
+- [x] **MUB Audit**: Walsh-Hadamard based energy concentration detection.
+- [x] **Stability Dashboard**: Real-time visualization and verification of operator stability in the desktop app.
 
 ---
 
-## 6. Quick start (reference harness)
+## 4. Quick Start
 
-> Minimal AEP flow. Adjust names to your AEP.
+### Prerequisites
+- Rust 1.75+
+- Node.js 18+ (for Desktop UI)
 
-```toml
-# aep.toml
-name = "aep_unity_vecadd"
-claim = "unity_neutral" # or: mirror_safe, boundary_window, phase_window, skeleton_respect
-witness = "resonance_snapshot" # or: delta_channel, boundary_probe, phase_probe
-classes_mask = ["C96:scalar"]
-# optional per-claim params …
+### Build the Workspace
+```bash
+# Build all Rust crates (core, cli, wasm, pikernel, compiler)
+cargo build --workspace
+
+# Build the Frontend
+npm install
+npm run build
 ```
 
-```atlas
-// kernel.atlas (pseudocode)
-.attributes [unity_neutral, mirror_safe]
-pb.load A, B, OUT
-for i in range(N): OUT[i] = A[i] + B[i]
-resonance.snapshot(OUT)
+### Run Tests
+```bash
+# Execute comprehensive math and stability tests
+cargo test --workspace
 ```
 
-```python
-# runner.py (sketch)
-import aep
-cfg = aep.load("aep.toml")
-ker = aep.compile("kernel.atlas")
-proof = aep.run(ker, cfg)
-aep.verify(proof)  # must fail deterministically if invariant is violated
+### Run CLI Tools
+```bash
+# Verify Boundary Lattice invariants
+cargo run -p apex-goldilocks-cli -- audit-lattice
+
+# Validate PIRTM source code (Phase A/B)
+cargo run -p apex-goldilocks-cli -- validate-pirtm --source "op(prime_index=7);"
+
+# Check ACE Stability (Phase C)
+cargo run -p apex-goldilocks-cli -- verify-stability --total-norm 800000
 ```
 
-**Expected result**: success only if the declared invariant(s) hold under the certified schedule; otherwise deterministic failure with audit artifacts.
+---
+
+## 5. Mathematical Guarantees
+
+### Contraction Certificate
+Verified via the iteration matrix $A = \text{diag}(1-\alpha) + \text{diag}(\alpha)|K|$.
+- **SlopeUB** $= \|A\|_\infty \le 0.9$
+- **GapLB** $= 1 - \text{SlopeUB} > 0$
+
+### ACE Safety
+Projection onto $S_t = \{x : \sum w_i|x_i| \le \tau\}$ ensures bounded energy and stability. KKT-optimized bisection provides exact certificates for $\ell_1$ compliance.
 
 ---
 
-## 7. Design primitives
+## 6. Project Structure
 
-- **Invariants**: `mirror_safe`, `unity_neutral`, `boundary_window`, `phase_window`, `skeleton_respect`.
-- **Schedule**: **C768** canonical fair schedule; **R96** resonance labeling; freeness and orbit tiling over \|G\| = 12,288.
-- **Audit**: resonance snapshots, Δ‑channel traces, boundary/phase probes; deterministic config bundle (anchors, generator order, salts, label seeds).
-- **Safety**: ACE weighted‑ℓ₁ projection; KKT residual certificate; rollback on budget breach.
-
----
-## 8. Verification checklists
-
-- **AEP**: claim declared → attributes attached → witness produced → launch fails on violation → audit written.
-- **Rhythm**: group/action implemented → freeness logged → 6 orbits disjoint and cover → C768 closure checks pass.
-- **Kernel**: atom set complete → recomposition defect ≤ bound → slope budget < 1 → MUB drift within tolerance.
-- **Runtime**: ACE projection certificate passes (KKT residuals) → contraction margin ≥ ε → rollback wired.
-- **Bridge**: multiplicity‑one restriction checked → idempotent split verified → Γ uniqueness test passes.
+- `crates/`: Standalone core logic and Internalized libraries.
+    - `apex-goldilocks-core`: The Atlas/E8 foundation.
+    - `apex-pikernel`: The $\pi$-kernel Rust port.
+    - `pirtm-compiler`: PIRTM-lang implementation.
+- `packages/`: Domain-specific extensions and integrations.
+- `src/`: React frontend source (Tauri app).
+- `src-tauri/`: Tauri backend and command routing.
 
 ---
 
-## 9. Interfaces
-
-- **AEP manifest**: `aep.toml` keys `name`, `claim`, `witness`, plus claim‑specific params.
-- **Kernel API**: `pb.load`/`store`, `.attributes[…]`, `resonance.snapshot`, `boundary.probe`, `phase.probe`.
-- **Runtime API**: `propose(w) → accept(ŵ)` via ACE; `step(T) = F + K(T)`; rollback hooks; ledger events.
-
----
-
-## 10. Governance & ethics
-
-- **Automorphic lawfulness**: encode ethical invariants as commuting operators; any non‑commuting update is rejected pre‑commit.
-- **Sovereignty tensor**: strict opt‑in gating; violations trigger Lockdown, Rollback, and ledger broadcast.
+## 7. Documentation & Governance
+- **Architecture**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- **Validation Report**: [docs/VALIDATION_REPORT.md](docs/VALIDATION_REPORT.md)
+- **Governance (Ξ-Constitution)**: [docs/governance/Ξ-Constitution.md](docs/governance/Ξ-Constitution.md)
+- **Agent Guidelines**: [AGENTS.md](AGENTS.md)
 
 ---
 
-## 11. Requirements & limits
+## 8. License
 
-**Requirements**
-- Python 3.11+ for reference harnesses.
-- Linear algebra backend (NumPy); optional GPU for heavy checks.
-- Deterministic seeds for audit bundles.
-
-**Limits**
-- No physical or quantum claims. Math only.
-- Runtime guarantees require ACE compliance and slope budgets; outside that, **UNPROVEN**.
-
----
-
-## 12. Roadmap
-
-- Reference AEP runners for all invariant families.
-- Lean/Coq formalization of Σ‑calculus and rhythm certificates.
-- End‑to‑end artifact ledger with reproducible audits.
-
----
-
-## 13. Minimal glossary
-
-- **AEP**: Atlas‑Embedding Proof, a runnable, invariant‑checked proof artifact.
-- **ACE**: weighted‑ℓ₁ safety set with budget radius and KKT certificate.
-- **C768**: canonical fair schedule integrating the six‑level tetrahedral rhythm.
-- **Π‑atom**: product projector across factor families; minimal update unit.
-
----
-
-## 14. License and attribution
-
-Released by the UOR Foundation and collaborators. See `LICENSE` in the repo. Cite Atlas→E8, AEP/ISA, rhythm C768, Π‑kernel/runtime, and the Conway–Monster bridge as appropriate.
+Released by the UOR Foundation and collaborators under MIT OR Apache-2.0. Cite Atlas→E8, AEP/ISA, rhythm C768, Π‑kernel, and Sedona Spine as appropriate.
