@@ -118,4 +118,4 @@ Projection onto $S_t = \{x : \sum w_i|x_i| \le \tau\}$ ensures bounded energy an
 
 ## 8. License
 
-Released by the UOR Foundation and collaborators under MIT OR Apache-2.0. Cite Atlas→E8, AEP/ISA, rhythm C768, Π‑kernel, and Sedona Spine as appropriate.
+Released by Citizen Gardens, UOR Foundation and collaborators under the Prime Materia Commons License - Cite Atlas→E8, AEP/ISA, rhythm C768, Π‑kernel, and Sedona Spine as appropriate.
