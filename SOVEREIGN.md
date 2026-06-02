@@ -1,8 +1,4 @@
-# SOVEREIGNTY.md
-
-## Purpose
-
-This repository is governed by a local-first covenant.
+# SOVEREIGN BY DESIGN
 
 The system is designed to run, verify, and persist its core state on user-controlled infrastructure by default. Remote services are optional adapters, not the source of truth. The purpose of this covenant is to preserve operational independence, protect user autonomy, and keep the chain of custody inside the verified boundary of the system.
 
