@@ -19,7 +19,7 @@
     "solc": "^0.8.27",
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^4.1.8"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.0",
